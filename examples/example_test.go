@@ -10,11 +10,11 @@ func TestOutput(t *testing.T) {
 
 	// This output matches the testoutput.snap in the __snapshots__ directory
 	output := []byte("This is my UI output\nAnd it can be complex")
-	snapshot.Assert(t, output)
+	snapshot.Assert(t, "example use", output)
 
 	// If I assert something different, I'll get a test failure and a diff of what changed
 	output = []byte("This is my UI output\nAnd it can be *very* complex")
-	snapshot.Assert(t, output)
+	snapshot.Assert(t, "example use", output)
 	// Output:
 	// Snapshot test failed for: TestOutput.  Diff:
 	//

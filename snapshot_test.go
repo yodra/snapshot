@@ -74,12 +74,12 @@ func TestCreateSnaps(t *testing.T) {
 	// test creating snaps
 	for _, tc := range tt {
 		t.Run(tc.Name, func(t *testing.T) {
+			labelTest := "creating snaps"
+			c.Assert(t, labelTest, []byte(tc.Out))
 
-			c.Assert(t, "creating snaps", []byte(tc.Out))
-
-			recv, err := ioutil.ReadFile(path.Join(tmpdir, getSnapFilename(t.Name(), ".snap")))
+			recv, err := ioutil.ReadFile(path.Join(tmpdir, getSnapFilename(t.Name()+labelTest, ".snap")))
 			if err != nil {
-				t.Fatalf("Expected snap file %s to be created but does not exist", getSnapFilename(t.Name(), ".snap"))
+				t.Fatalf("Expected snap file %s to be created but does not exist", getSnapFilename(t.Name()+labelTest, ".snap"))
 			}
 			assert.True(t, bytes.Equal([]byte(tc.Out), recv))
 		})
@@ -108,19 +108,20 @@ func TestSnaps(t *testing.T) {
 	// Check all created snaps and expect no errors, then update
 	for _, tc := range tt {
 		t.Run(tc.Name, func(t *testing.T) {
+			labelTest := "check created snaps"
 			if err := os.Unsetenv("UPDATE_SNAPSHOTS"); err != nil {
 				t.Fatalf("Unexpected error unsetting environment: %s", err)
 			}
-			if err := createSnapshot(t.Name(), []byte(tc.Out), c.Directory, c.Extension); err != nil {
+			if err := createSnapshot(t.Name()+labelTest, []byte(tc.Out), c.Directory, c.Extension); err != nil {
 				t.Fatalf("Unexpected error writing snap file: %s", err)
 			}
-			c.Assert(t, "", []byte(tc.Out))
+			c.Assert(t, labelTest, []byte(tc.Out))
 
 			if err := os.Setenv("UPDATE_SNAPSHOTS", "true"); err != nil {
 				t.Fatalf("Unexpected error setting environment: %s", err)
 			}
-			c.Assert(t, "", []byte(tc.Out+"\nupdated"))
-			recv, err := ioutil.ReadFile(path.Join(c.Directory, getSnapFilename(t.Name(), ".snap")))
+			c.Assert(t, labelTest, []byte(tc.Out+"\nupdated"))
+			recv, err := ioutil.ReadFile(path.Join(c.Directory, getSnapFilename(t.Name()+labelTest, ".snap")))
 			if err != nil {
 				t.Fatalf("Unexpected error reading snap file: %s", err)
 			}
