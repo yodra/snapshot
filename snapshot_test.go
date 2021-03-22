@@ -75,7 +75,7 @@ func TestCreateSnaps(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.Name, func(t *testing.T) {
 
-			c.Assert(t, []byte(tc.Out))
+			c.Assert(t, "creating snaps", []byte(tc.Out))
 
 			recv, err := ioutil.ReadFile(path.Join(tmpdir, getSnapFilename(t.Name(), ".snap")))
 			if err != nil {
@@ -114,12 +114,12 @@ func TestSnaps(t *testing.T) {
 			if err := createSnapshot(t.Name(), []byte(tc.Out), c.Directory, c.Extension); err != nil {
 				t.Fatalf("Unexpected error writing snap file: %s", err)
 			}
-			c.Assert(t, []byte(tc.Out))
+			c.Assert(t, "", []byte(tc.Out))
 
 			if err := os.Setenv("UPDATE_SNAPSHOTS", "true"); err != nil {
 				t.Fatalf("Unexpected error setting environment: %s", err)
 			}
-			c.Assert(t, []byte(tc.Out+"\nupdated"))
+			c.Assert(t, "", []byte(tc.Out+"\nupdated"))
 			recv, err := ioutil.ReadFile(path.Join(c.Directory, getSnapFilename(t.Name(), ".snap")))
 			if err != nil {
 				t.Fatalf("Unexpected error reading snap file: %s", err)

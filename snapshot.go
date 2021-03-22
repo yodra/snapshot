@@ -105,21 +105,21 @@ func SnapExtension(ext string) ConfigOption {
 // output does not match, the test will fail and a diff will be shown.  To update your snapshots, set
 // `UPDATE_SNAPSHOTS=true` when running your test suite.  The default config stores snapshots in `__snapshots__` relative
 // to the test directory.
-func Assert(t testing.TB, b interface{}) {
+func Assert(t testing.TB, label string, b interface{}) {
 	c, err := New()
 	if err != nil {
 		t.Fatalf("Unable to create new snapshot config: %s", err)
 	}
 	switch b.(type) {
 	case []byte:
-		c.Assert(t, b.([]byte))
+		c.Assert(t, label, b.([]byte))
 	default:
 		buf := new(bytes.Buffer)
 		scs := spew.ConfigState{
 			DisablePointerAddresses: true,
 		}
 		scs.Fdump(buf, b)
-		c.Assert(t, buf.Bytes())
+		c.Assert(t, label, buf.Bytes())
 	}
 
 }
@@ -130,7 +130,7 @@ func Assert(t testing.TB, b interface{}) {
 // `UPDATE_SNAPSHOTS=true` when running your test suite.
 //
 // See `New` for custom configuration options such as where to save testing snapshots.
-func (c *Config) Assert(t testing.TB, b []byte) {
+func (c *Config) Assert(t testing.TB, label string, b []byte) {
 	t.Helper()
 
 	// if no snapshot directory exists, fail unless updateable is set
@@ -140,7 +140,7 @@ func (c *Config) Assert(t testing.TB, b []byte) {
 			if err := os.MkdirAll(c.Directory, os.FileMode(0777)); err != nil {
 				t.Fatalf("Unable to create the snapshot directory, failing")
 			}
-			if err := createSnapshot(t.Name(), b, c.Directory, c.Extension); err != nil {
+			if err := createSnapshot(t.Name()+label, b, c.Directory, c.Extension); err != nil {
 				t.Fatalf("Unable to create snapshot: %s", err)
 			}
 			return
@@ -149,9 +149,9 @@ func (c *Config) Assert(t testing.TB, b []byte) {
 		}
 	}
 
-	expected, err := readSnapshot(t.Name(), c.Directory, c.Extension)
+	expected, err := readSnapshot(t.Name()+label, c.Directory, c.Extension)
 	if err != nil {
-		if err := createSnapshot(t.Name(), b, c.Directory, c.Extension); err != nil {
+		if err := createSnapshot(t.Name()+label, b, c.Directory, c.Extension); err != nil {
 			t.Fatalf("Unable to create snapshot: %s", err)
 		}
 		return
@@ -161,7 +161,7 @@ func (c *Config) Assert(t testing.TB, b []byte) {
 		return
 	default:
 		if isUpdateable() {
-			if err := createSnapshot(t.Name(), b, c.Directory, c.Extension); err != nil {
+			if err := createSnapshot(t.Name()+label, b, c.Directory, c.Extension); err != nil {
 				t.Fatalf("Unable to create snapshot: %s", err)
 			}
 			return
@@ -179,9 +179,9 @@ func (c *Config) Assert(t testing.TB, b []byte) {
 					return
 				}
 			}
-			t.Fatalf("Snapshot test failed for: %s.  Diff:\n\n%s", t.Name(), diff)
+			t.Fatalf("Snapshot test failed for: %s.  Diff:\n\n%s", t.Name()+label, diff)
 		default:
-			t.Fatalf("Snapshot test failed for: %s.  Diff: (undiffable binary format)", t.Name())
+			t.Fatalf("Snapshot test failed for: %s.  Diff: (undiffable binary format)", t.Name()+label)
 		}
 	}
 }
